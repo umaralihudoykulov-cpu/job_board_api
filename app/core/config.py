@@ -1,50 +1,48 @@
-from typing import List
+from functools import lru_cache
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Primary env-backed settings (use uppercase names to match .env)
-    DATABASE_URL: str
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    project_name: str = Field(default="Job Board API", alias="PROJECT_NAME")
+    project_version: str = Field(default="1.0.0", alias="PROJECT_VERSION")
+    debug: bool = Field(default=False, alias="DEBUG")
 
-    # Application metadata (provide sensible defaults, can be overridden by env)
-    project_name: str = Field("Job Board API", env="PROJECT_NAME")
-    project_version: str = Field("0.1.0", env="PROJECT_VERSION")
-    debug: bool = Field(False, env="DEBUG")
+    database_url: str = Field(alias="DATABASE_URL")
 
-    # CORS origins: either a comma-separated env var CORS_ORIGINS or default to allow-all
-    cors_origins_list: List[str] = Field(default_factory=lambda: ["*"])  # can be overridden by CORS_ORIGINS
+    secret_key: str = Field(alias="SECRET_KEY")
+    algorithm: str = Field(default="HS256", alias="ALGORITHM")
+    access_token_expire_minutes: int = Field(
+        default=30,
+        alias="ACCESS_TOKEN_EXPIRE_MINUTES",
+    )
+
+    allowed_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000",
+        alias="ALLOWED_ORIGINS",
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=True,
+        populate_by_name=True,
     )
 
-    # Compatibility properties for code that expects different attribute names
     @property
-    def database_url(self) -> str:
-        return self.DATABASE_URL
-
-    @property
-    def jwt_secret_key(self) -> str:
-        return self.SECRET_KEY
-
-    @property
-    def jwt_algorithm(self) -> str:
-        return self.ALGORITHM
-
-    @property
-    def access_token_expire_minutes(self) -> int:
-        return self.ACCESS_TOKEN_EXPIRE_MINUTES
-
-    @property
-    def refresh_token_expire_days(self) -> int:
-        return self.REFRESH_TOKEN_EXPIRE_DAYS
+    def cors_origins_list(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.allowed_origins.split(",")
+            if origin.strip()
+        ]
 
 
-settings = Settings()
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+settings = get_settings()
