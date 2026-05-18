@@ -16,3 +16,4 @@ Production-ready Job Board API built with:
 source .venv/bin/activate
 uvicorn app.main:app --reload# job_board_api
 # deploy test
+# ci fix test
