@@ -15,3 +15,4 @@ Production-ready Job Board API built with:
 ```bash
 source .venv/bin/activate
 uvicorn app.main:app --reload# job_board_api
+# deploy test
