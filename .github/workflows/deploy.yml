@@ -37,6 +37,22 @@ jobs:
 
             sudo systemctl daemon-reload
             sudo systemctl restart job-board
+
+            sleep 5
+
+            sudo systemctl is-active --quiet job-board
             sudo systemctl status job-board --no-pager
 
-            curl -f http://127.0.0.1:8000/
+            for i in {1..10}; do
+              if curl -f http://127.0.0.1:8000/; then
+                echo "Application is healthy"
+                exit 0
+              fi
+
+              echo "Waiting for application to start... attempt $i"
+              sleep 3
+            done
+
+            echo "Application failed health check"
+            sudo journalctl -u job-board -n 100 --no-pager
+            exit 1
