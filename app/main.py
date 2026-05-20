@@ -28,7 +28,7 @@ def create_app() -> FastAPI:
     @app.get("/", tags=["Health"])
     async def health_check() -> dict[str, str]:
         return {
-            "status": "noo davlatyor",
+            "status": "bu davlatyodi hatosi edi",
             "project": settings.project_name,
             "version": settings.project_version,
             "docs": "/docs",
